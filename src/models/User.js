@@ -26,6 +26,9 @@ const UserSchema = new mongoose.Schema(
       type: String,
       enum: ["Hospital", "Paciente"],
       required: true,
+      set: (value) =>
+        value.toLowerCase().charAt(0).toUpperCase() +
+        value.toLowerCase().slice(1),
     },
     confirmed: {
       type: Boolean,
@@ -34,5 +37,12 @@ const UserSchema = new mongoose.Schema(
   },
   { versionKey: false, timestamps: true }
 );
+UserSchema.pre("save", function (next) {
+  if (this.type) {
+    this.type = this.type.toLowerCase();
+    this.type = this.type.charAt(0).toUpperCase() + this.type.slice(1);
+  }
+  next();
+});
 
 module.exports = mongoose.model("User", UserSchema);

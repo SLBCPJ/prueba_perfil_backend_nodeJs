@@ -32,7 +32,7 @@ const validateRegister = [
     .exists()
     .notEmpty()
     .isString()
-    .isLength({ min: 6, max: 100 })
+    .isLength({ min: 8, max: 100 })
     .withMessage("La contraseña debe tener al menos 8 caracteres"),
   check("phone")
     .exists()
