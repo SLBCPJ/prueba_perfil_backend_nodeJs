@@ -1,30 +1,22 @@
 const express = require("express");
 const router = express.Router();
-const { body } = require("express-validator");
 const {
   registerUser,
   confirmUser,
   login,
 } = require("../controllers/auth.controller");
+const {
+  validateRegister,
+  validateLogin,
+  validateFieldConfirm,
+} = require("../validators/auth");
 
 // Rutas para registro, autenticación y login de usuarios
-router.post(
-  "/register",
-  [
-    body("identification").isString().notEmpty(),
-    body("email").isEmail(),
-    body("phone").isString().notEmpty(),
-    body("password").isString().notEmpty(),
-    body("type").isString().notEmpty(),
-  ],
-  registerUser
-);
-router.post("/confirm", confirmUser);
-router.post(
-  "/login",
-  body("email").isEmail(),
-  body("password").notEmpty(),
-  login
-);
+router.post("/register", validateRegister, registerUser);
+router.post("/confirm", validateFieldConfirm, confirmUser);
+router.post("/login", validateLogin, login);
+
+// Endpoint para solicitar un correo electrónico de recuperación de contraseña, faltó complementarla
+router.post("/forgot-password", (req, res) => {});
 
 module.exports = router;

@@ -23,4 +23,6 @@ app.use("/api", patientRoutes);
 app.use("/api", hospitalRoutes);
 
 connectDB();
-app.listen(PORT, () => console.log(`Server Ready On Port: ${PORT}`));
+app.listen(PORT, () =>
+  console.log(`Server Ready On Port http://localhost:${PORT}`)
+);

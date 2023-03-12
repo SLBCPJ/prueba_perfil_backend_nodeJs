@@ -14,7 +14,11 @@ const tokenSign = async (user) => {
 
 const verifyToken = async (token) => {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.exp < Date.now() / 1000) {
+      throw new Error("El token ha expirado");
+    }
+    return decoded;
   } catch (e) {
     return null;
   }

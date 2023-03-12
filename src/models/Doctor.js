@@ -13,7 +13,6 @@ const doctorSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
     hospitalId: {
       type: mongoose.Schema.Types.ObjectId,

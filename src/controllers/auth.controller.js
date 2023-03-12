@@ -1,5 +1,4 @@
 const bcrypt = require("bcrypt");
-const { validationResult } = require("express-validator");
 const authService = require("../services/auth.service");
 const sendConfirmationEmail = require("../utils/sendConfirmationEmail");
 const confirmUser = require("../services/confimUser.service");
@@ -8,11 +7,6 @@ const { encrypt } = require("../utils/handleEncriptPass");
 const { tokenSign } = require("../utils/handleToken");
 exports.registerUser = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const { identification, email, phone, password, type } = req.body;
 
     // Verificar si el usuario ya existe
@@ -73,8 +67,9 @@ exports.login = async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: "Credenciales inválidas" });
     }
+
+    // verificar si el usuario ha confirmado su registro
     if (!user.confirmed) {
-      // verifica si el usuario ha confirmado su registro
       return res.status(401).json({
         message: "Debes confirmar tu registro para poder acceder al sistema",
       });

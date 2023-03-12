@@ -1,18 +1,10 @@
-const { validationResult } = require("express-validator");
 const Doctor = require("../models/Doctor");
-const User = require("../models/User");
 const Hospital = require("../models/Hospital");
 
 exports.registerDoctor = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { name, speciality } = req.body;
-    const userId = req.user.id;
-
+    const { name, speciality, hospitalId } = req.body;
+    const userId = req.user ? req.user.id : undefined;
     // Verificar si el usuario ya tiene un perfil de médico registrado
     const existingDoctor = await Doctor.findOne({ userId });
     if (existingDoctor) {
@@ -20,8 +12,7 @@ exports.registerDoctor = async (req, res) => {
     }
 
     // Buscar el hospital al que está asociado el médico
-    const user = await User.findById(userId);
-    const hospital = await Hospital.findOne({ _id: user.hospitalId });
+    const hospital = await Hospital.findOne({ _id: hospitalId });
     if (!hospital) {
       return res.status(400).json({ message: "No se encontró el hospital" });
     }
@@ -30,7 +21,7 @@ exports.registerDoctor = async (req, res) => {
       name,
       speciality,
       userId,
-      hospitalId: hospital._id,
+      hospitalId,
     });
 
     await newDoctor.save();

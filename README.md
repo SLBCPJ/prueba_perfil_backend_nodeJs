@@ -4,7 +4,7 @@
 
 La prueba es una aplicación que permite la gestión de usuarios en un sistema de salud. A continuación, se detallan los requerimientos y condiciones que se deben cumplir para el correcto funcionamiento de la aplicación.
 
-Requerimientos
+###Requerimientos
 
 Permitir registro de usuarios con Identificación, Email, Teléfono y contraseña.
 
@@ -28,33 +28,29 @@ Registro de usuario tipo Médico por parte de un usuario Hospital.
 
 Tecnologías utilizadas
 
-Lenguaje de programación: JavaScript(NodeJS)
+Lenguaje de programación: **JavaScript(NodeJS)**
 
-Framework de desarrollo: Express
+Framework de desarrollo: **Express**
 
-Sistema gestor de base de datos: MongoDB
+Sistema gestor de base de datos: **MongoDB**
 
-Instalación:
+###Instalación:
 
 Clonar el repositorio: git clone https://github.com/SLBCPJ/prueba_perfil_backend_nodeJs.git
 
-Instalar todas las dependencias con el comando: npm i
+Instalar todas las dependencias con el comando: **`npm install`**
 
-Ejecutar la aplicación en modo desarrollo con el comando: npm run dev
+Ejecutar la aplicación en modo desarrollo con el comando: **`npm run dev`**
 
 Para realizar las debidas pruebas se puede utilizar postman o algun simulador de cliente para consumir los diferentes enpoints.
 
-Consideraciones:
+###Consideraciones:
 
-La prueba se realizó basado en el patrón de diseño MVC.
+La prueba se realizó basada en el patrón de diseño **MVC.**
 
-Para las pruebas de correo se utilizó YopMail ya que no se puede registrar cualquier correo tiene que ser un correo creado previamente.
+Para las pruebas de correo se utilizó **YopMail**, ya que no se puede registrar cualquier correo; tiene que ser un correo creado previamente.
 
-Contribuciones
-
-Las contribuciones son bienvenidas. Si deseas contribuir al mejoramiento de esta prueba, por favor, realiza un fork y envía tus pull requests.
-
-Autores
+####Autor
 
 Yimy Cohetata Pedraza
 

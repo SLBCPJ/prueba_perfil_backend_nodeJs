@@ -1,13 +1,7 @@
-const { validationResult } = require("express-validator");
 const Hospital = require("../models/Hospital");
 
 exports.registerHospital = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const { name, address, services, userId } = req.body;
     // Verificar si ya existe un hospital con el userId proporcionado
     const hospitalExists = await Hospital.findOne({ userId });
