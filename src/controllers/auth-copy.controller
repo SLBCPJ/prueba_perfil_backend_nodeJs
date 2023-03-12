@@ -1,0 +1,259 @@
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const { validationResult } = require("express-validator");
+const User = require("../models/User");
+const { sendEmail } = require("../email/email");
+
+// Función para registrar un nuevo usuario (paciente o hospital)
+exports.registerUser = async (req, res) => {
+  try {
+    // Verificar errores de validación
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
+    // Verificar que no exista otro usuario con la misma identificación o email
+    const existingUser = await User.findOne({
+      $or: [
+        { identification: req.body.identification },
+        { email: req.body.email },
+      ],
+    });
+    if (existingUser) {
+      return res.status(400).json({ message: "El usuario ya existe" });
+    }
+
+    // Crear el nuevo usuario
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const user = new User({
+      identification: req.body.identification,
+      email: req.body.email,
+      phone: req.body.phone,
+      password: hashedPassword,
+      type: req.body.type,
+      confirmationType: req.body.confirmationType,
+    });
+    await user.save();
+    // Generate token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    // Llamar la función "register" para enviar el correo de confirmación
+    await register(user);
+    // Return response with token
+    // res.status(201).json({ token, userId: user.id });
+
+    // Devolver mensaje de éxito
+    return res.status(201).json({ token, userId: user.id });
+    // return res.status(201).json({ message: "Usuario creado exitosamente" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
+// Función para confirmar el registro de un usuario
+/* exports.confirmRegistration = async (req, res) => {
+  const { token } = req.body;
+  const decodedToken = jwt.decode(token);
+
+  try {
+    const user = await User.findOne({
+      _id: decodedToken.user._id,
+      confirmationCode: decodedToken.user.confirmationCode,
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.confirmed = true;
+    user.confirmationCode = undefined;
+
+    await user.save();
+
+    return res.status(200).json({ message: "User confirmed" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+}; */
+
+//Funcion post para confirmar el registro
+/* exports.confirm = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    const confirmationType = req.body.confirmationType;
+
+    // Verificar que el usuario no haya sido confirmado previamente
+    if (user.isConfirmed) {
+      return res
+        .status(400)
+        .json({ message: "Este usuario ya ha sido confirmado" });
+    }
+
+    // Confirmar el registro del usuario
+    await confirmRegistration(user, confirmationType);
+
+    res.json({ message: "Registro confirmado exitosamente" });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ message: "Error al confirmar el registro del usuario" });
+  }
+}; */
+
+/* exports.register = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+
+    if (!user) {
+      return res.status(400).json({ message: "El usuario no existe" });
+    }
+
+    if (user.confirmed) {
+      return res.status(400).json({ message: "El usuario ya fue confirmado" });
+    } */
+
+/* // Generar código de confirmación y actualizar el campo en la base de datos
+    const confirmationCode = crypto.randomBytes(20).toString("hex");
+    user.confirmationCode = confirmationCode;
+    await user.save();
+
+    // Enviar correo electrónico de confirmación
+    const emailData = {
+      to: user.email,
+      subject: "Confirmación de registro",
+      html: `Por favor, haga clic en el siguiente enlace para confirmar su cuenta: <a href="${process.env.CLIENT_URL}/confirm/${user._id}/${confirmationCode}">Confirmar</a>`,
+    };
+
+    sendEmail(emailData);
+
+    res.status(200).json({
+      message: `Se ha enviado un correo electrónico a ${user.email}. Por favor, revise su bandeja de entrada y haga clic en el enlace de confirmación para activar su cuenta.`,
+    }); */
+
+// enviar correo electrónico de confirmación
+/*     const confirmationCode = crypto.randomBytes(20).toString("hex");
+    const subject = "Confirma tu correo electrónico";
+    const html = `Haz clic en el siguiente enlace para confirmar tu correo electrónico: <a href="http://localhost:3000/confirm?code=${confirmationCode}">http://localhost:3000/confirm?code=${confirmationCode}</a>`;
+
+    sendEmail(email, subject, html);
+
+    res.json({ message: "Usuario creado exitosamente" });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Ha ocurrido un error" });
+  }
+}; */
+// Controlador para enviar el email de confirmación y actualizar el campo confirmationCode en la base de datos
+exports.register = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+
+    if (!user) {
+      return res.status(400).json({ message: "El usuario no existe" });
+    }
+
+    if (user.confirmed) {
+      return res.status(400).json({ message: "El usuario ya fue confirmado" });
+    }
+
+    // Generar código de confirmación y actualizar el campo en la base de datos
+    const confirmationCode = crypto.randomBytes(20).toString("hex");
+    user.confirmationCode = confirmationCode;
+    await user.save();
+
+    // Enviar correo electrónico de confirmación
+    const emailData = {
+      to: user.email,
+      subject: "Confirmación de registro",
+      html: `Por favor, haga clic en el siguiente enlace para confirmar su cuenta: <a href="${process.env.CLIENT_URL}/confirm/${user._id}/${confirmationCode}">Confirmar</a>`,
+    };
+
+    await sendEmail(emailData);
+
+    res.status(200).json({
+      message: `Se ha enviado un correo electrónico a ${user.email}. Por favor, revise su bandeja de entrada y haga clic en el enlace de confirmación para activar su cuenta.`,
+    });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Ha ocurrido un error" });
+  }
+};
+
+// Controlador para confirmar el registro de un usuario
+exports.confirmRegistration = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      _id: req.params.userId,
+      confirmationCode: req.params.confirmationCode,
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "El código de confirmación es inválido" });
+    }
+
+    if (user.confirmed) {
+      return res.status(400).json({ message: "El usuario ya fue confirmado" });
+    }
+
+    user.confirmed = true;
+    user.confirmationCode = null;
+    await user.save();
+
+    res
+      .status(200)
+      .json({ message: "El usuario ha sido confirmado correctamente" });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Ha ocurrido un error" });
+  }
+};
+
+// Función para iniciar sesión de un usuario
+exports.login = async (req, res) => {
+  const { identification, email, password } = req.body;
+
+  try {
+    // Buscar el usuario por identificación o email
+    const user = await User.findOne({
+      $or: [{ identification }, { email }],
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials." });
+    }
+
+    // Check if password is correct
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ message: "Invalid credentials." });
+    }
+
+    // Generate token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    // Return response with token
+    res.status(200).json({ token, identification: user.identification });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
